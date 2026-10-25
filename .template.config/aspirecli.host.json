@@ -1,0 +1,21 @@
+{
+  "symbolInfo": {
+    "AspireHostingSqlServerVersion": {
+      "valueSource": {
+        "kind": "nugetPackageVersion",
+        "packageId": "Aspire.Hosting.SqlServer",
+        "versionRange": "*-*",
+        "allowPrerelease": true
+      }
+    },
+    "AspireHostingTestingVersion": {
+      "valueSource": {
+        "kind": "nugetPackageVersion",
+        "packageId": "Aspire.Hosting.Testing",
+        "versionRange": "*-*",
+        "allowPrerelease": true
+      }
+    }
+  },
+  "createNuGetConfig": true
+}

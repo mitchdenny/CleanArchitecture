@@ -17,6 +17,42 @@
   "templateFileExtensions": [ ".cs", ".csproj", ".slnx" ],
   "preferNameDirectory": true,
   "symbols": {
+    "AspireVersion": {
+      "type": "parameter",
+      "dataType": "string",
+      "defaultValue": "13.6.4",
+      "description": "Aspire AppHost SDK version.",
+      "replaces": "13.6.4",
+      "onlyIf": [
+        { "after": "Aspire.AppHost.Sdk/", "before": "\"" }
+      ]
+    },
+    "AspireHostingSqlServerVersion": {
+      "type": "parameter",
+      "dataType": "string",
+      "defaultValue": "13.6.4",
+      "description": "Aspire.Hosting.SqlServer package version.",
+      "replaces": "13.6.4",
+      "onlyIf": [
+        { "after": "Include=\"Aspire.Hosting.SqlServer\" Version=\"", "before": "\"" }
+      ]
+    },
+    "AspireHostingTestingVersion": {
+      "type": "parameter",
+      "dataType": "string",
+      "defaultValue": "13.6.4",
+      "description": "Aspire.Hosting.Testing package version.",
+      "replaces": "13.6.4",
+      "onlyIf": [
+        { "after": "Include=\"Aspire.Hosting.Testing\" Version=\"", "before": "\"" }
+      ]
+    },
+    "AspireNuGetSource": {
+      "type": "parameter",
+      "dataType": "string",
+      "defaultValue": "",
+      "description": "When supplied by Aspire CLI, use its generated NuGet feed policy."
+    },
     "safeSourceName": {
       "type": "derived",
       "valueSource": "name",
@@ -32,14 +68,22 @@
       "exclude": [ 
         ".vs/**",
         ".vscode/**",
+        ".git",
         ".git/**",
         ".github/**",
         ".idea/**",
         ".template.config/**",
         "docs/**",
-        "sample/**"
+        "sample/**",
+        "MinimalClean/**",
+        "**/bin/**",
+        "**/obj/**"
       ],
       "modifiers": [
+        {
+          "condition": "(AspireNuGetSource != \"\")",
+          "exclude": [ "nuget.config" ]
+        },
         {
           "condition": "true",
           "copyOnly": [ "*.dll", "*.png", "*.ico", "*.jpg", "*.jpeg", "*.ps1" ]

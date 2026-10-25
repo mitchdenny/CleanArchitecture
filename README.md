@@ -90,6 +90,97 @@ The main branch is now using **.NET 9**. This corresponds with NuGet package ver
 - [DotNetRocks Podcast Discussion with Steve "ardalis" Smith](https://player.fm/series/net-rocks/clean-architecture-with-steve-smith)
 - [Fritz and Friends Streaming Discussion with Steve "ardalis" Smith](https://www.youtube.com/watch?v=k8cZUW4MS3I)
 
+## Aspire CLI template proof of concept
+
+This fork adapts the full `clean-arch` template for the directory/Git template
+mechanism in [microsoft/aspire#21263](https://github.com/microsoft/aspire/pull/21263).
+Use a CLI built from that change; released CLIs without these source options
+cannot run the commands below. The separate `MinimalClean` template is unchanged.
+
+From an unpacked checkout:
+
+```bash
+/path/to/feature/aspire new --template-path . \
+  --name CleanPoc --output ../CleanPoc --suppress-agent-init
+```
+
+From this fork:
+
+```bash
+/path/to/feature/aspire new \
+  --template-repository https://github.com/mitchdenny/CleanArchitecture.git \
+  --template-repository-ref mitchdenny-cleanarchitecture-template-poc \
+  --template-path . \
+  --name CleanPoc --output ./CleanPoc --suppress-agent-init
+```
+
+Select **ASP.NET Clean Architecture Solution** when prompted. The repository
+contains two templates, so the current mechanism requires interactive selection
+at its root; `--non-interactive` cannot select the full template. A full commit SHA
+can replace the branch ref for reproducible generation.
+
+The authored SDK, SQL Server integration, and testing defaults are
+[Aspire 13.6.4](https://github.com/microsoft/aspire/releases/tag/v13.6.4), the
+latest stable release when this proof of concept was updated. Ordinary .NET
+template usage still works and retains the template's NuGet configuration:
+
+```bash
+dotnet new install .
+dotnet new clean-arch --name CleanPoc --output ../CleanPoc
+```
+
+`AspireVersion` is a string parameter that Aspire CLI replaces with its SDK
+identity, including a PR suffix. `AspireHostingSqlServerVersion` and
+`AspireHostingTestingVersion` are separate string parameters. Under Aspire CLI,
+the host resolves each package independently to the highest version available
+on its mapping-eligible feeds (`*-*`, including prereleases); under `dotnet new`,
+they use their stable defaults or explicit command-line overrides. Context-scoped
+replacements keep these three versions independent even when defaults match.
+
+For a PR CLI with downloaded matching build packages, set the existing identity
+override before either Aspire command:
+
+```bash
+export ASPIRE_CLI_PACKAGES=/absolute/path/to/pr-nupkg-feed
+```
+
+The directory must include the matching SDK and integration packages, plus any
+required RID-specific packages. This is an identity-source override, not the
+`--source` template-package option, which cannot be combined with custom template
+sources. No PR number or package build version is hardcoded in the template.
+
+When Aspire supplies `AspireNuGetSource`, generation excludes the template-owned
+`nuget.config`. The host's `createNuGetConfig` opt-in then lets the CLI generate
+the source-aware package mappings without a template-owned config blocking them.
+Stable nuget.org-only policy may need no generated file. The generated policy
+inherits normal NuGet sources for non-Aspire dependencies; it does not globally
+replace user/machine settings. For isolated validation, provide an ancestor
+NuGet configuration containing only nuget.org and use a fresh home/package cache.
+The old Windows-only `LocalNuget` entry remains available to ordinary `dotnet new`
+users, but is not copied into Aspire-generated output.
+
+Generation does not run restore or template post-actions. Build the generated
+AppHost explicitly:
+
+```bash
+dotnet build CleanPoc/src/CleanPoc.AspireHost/CleanPoc.AspireHost.csproj
+dotnet build CleanPoc/tests/CleanPoc.AspireTests/CleanPoc.AspireTests.csproj
+```
+
+The original AppHost restore failed on audited MessagePack and transitive
+`System.Security.Cryptography.Pkcs` vulnerabilities, promoted to errors by
+`TreatWarningsAsErrors`. Their minimum patched versions are pinned without
+disabling audit. The Microsoft.Extensions and OpenTelemetry versions consumed by
+the updated Aspire SDK/integrations are aligned to avoid central transitive-pin
+downgrades; other dependency versions are unchanged.
+
+AppHost and Aspire testing-project builds work with both stable defaults and
+PR-injected versions. Full-solution restore still encounters the existing
+SSH.NET 2025.1.0 vulnerability warnings in Testcontainers-backed tests; those
+unrelated dependencies are outside this proof of concept. Stable builds retain
+ASPIRE010 (CLI bundle opt-in), and the tested PR SDK retains ASPIRE012 (legacy
+AppHost SDK migration); neither diagnostic is suppressed.
+
 # Documentation
 
 The official documentation for this template, including Getting Started steps, Migration Guides, and Architectural Decisions, can be found at [Ardalis Clean Architecture Docs](https://ardalis.github.io/CleanArchitecture).
