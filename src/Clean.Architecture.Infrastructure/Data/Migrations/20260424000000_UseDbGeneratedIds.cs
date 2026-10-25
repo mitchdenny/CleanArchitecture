@@ -14,7 +14,7 @@ public partial class UseDbGeneratedIds : Migration
         {
             // SQL Server requires drop/recreate to add IDENTITY to an existing column.
             // Rename the old table, recreate with IDENTITY, copy data, then drop old.
-            migrationBuilder.Sql("EXEC sp_rename N'[Contributors]', N'[Contributors_old]'");
+            migrationBuilder.Sql("EXEC sp_rename N'[Contributors]', N'Contributors_old'");
             migrationBuilder.Sql("EXEC sp_rename N'[Contributors_old].[PK_Contributors]', N'PK_Contributors_old', N'INDEX'");
 
             migrationBuilder.CreateTable(
@@ -50,7 +50,7 @@ public partial class UseDbGeneratedIds : Migration
     {
         if (migrationBuilder.ActiveProvider == "Microsoft.EntityFrameworkCore.SqlServer")
         {
-            migrationBuilder.Sql("EXEC sp_rename N'[Contributors]', N'[Contributors_old]'");
+            migrationBuilder.Sql("EXEC sp_rename N'[Contributors]', N'Contributors_old'");
             migrationBuilder.Sql("EXEC sp_rename N'[Contributors_old].[PK_Contributors]', N'PK_Contributors_old', N'INDEX'");
 
             migrationBuilder.CreateTable(
